@@ -4,65 +4,44 @@ import random
 def evaluate_subset(subset):
     return random.uniform(0, 1)
 
-# Generate all possible subsets
-# Uses bit manipulation which makes it the most optimal way of getting all of the subsets I think
-def generate_subsets(num_features):
-    # Initialize an empty list to store subsets
-    subsets = []
-
-    # Iterate through all numbers from 1 to 2^num_features - 1
-    # (excluding 0 to avoid the empty subset)
-    for i in range(1, 2**num_features):
-
-        # Initialize an empty set to represent the current subset
-        subset = set()
-
-        # This checks if the current feature number index is a 1 in the binary representation of i
-        # i goes from 1 to 2^num features
-        # Ex: When we get to the fifth subset, 5 = 101
-        # The 1st and 3rd index is 1, so this would add the subset {1, 3}
-        for j in range(num_features):
-            if i & (1 << j):
-                subset.add(j + 1)  
-
-        subsets.append(subset)
-
-    return subsets
-
-
-# Greedy search algorithm
-def greedy_search(num_features):
-    # Generate all possible subsets
-    subsets = generate_subsets(num_features)
-    
-    # Initialize best subset and accuracy
+# Greedy search algorithm for feature selection
+def greedy_feature_selection(num_features):
+    # Initialize the current subset with an empty set
+    current_subset = set()
     best_subset = set()
     best_accuracy = 0
-    all_results = {}
+    subset_evaluations = {}
     
-    # Iterate through all possible feature subsets
-    for subset in subsets:
-        accuracy = evaluate_subset(subset)
-        all_results[str(subset)] = accuracy
+    # Iterate over all possible features
+    for feature in range(1, num_features + 1):
+        # Add the current feature to the current subset
+        current_subset.add(feature)
         
-        # Update the best subset if the accuracy is higher
+        # Evaluate the current subset
+        accuracy = evaluate_subset(current_subset)
+        subset_evaluations[str(current_subset)] = accuracy
+        
+        # If the accuracy is higher than the best accuracy, update the best subset and accuracy
         if accuracy > best_accuracy:
-            best_subset = subset
+            best_subset = current_subset.copy()
             best_accuracy = accuracy
+        else:
+            # If accuracy did not improve, remove the feature from the current subset
+            current_subset.remove(feature)
     
-    return best_subset, best_accuracy, all_results
+    return best_subset, best_accuracy, subset_evaluations
 
 # Main function
 def main():
     # Take number of features as input from the user
     num_features = int(input("Enter the total number of features: "))
     
-    # Perform greedy search
-    best_subset, best_accuracy, all_results = greedy_search(num_features)
+    # Perform greedy feature selection
+    best_subset, best_accuracy, subset_evaluations = greedy_feature_selection(num_features)
     
-    # Print all results
-    print("All subset evaluations:")
-    for subset, accuracy in all_results.items():
+    # Print evaluations of all subsets
+    print("Subset evaluations:")
+    for subset, accuracy in subset_evaluations.items():
         print(f"Subset: {subset}, Accuracy: {accuracy}")
     
     # Print results
