@@ -1,4 +1,5 @@
 from forward_selection import forward_selection
+from backwards_elimination import backward_elimination
 from forward_selection import evaluate_subset
 
 # Main function
@@ -12,13 +13,16 @@ def main():
     
     # Print initial accuracy without any features
     no_feature_accuracy = evaluate_subset(set())
-    print(f"Using no features and 'random' evaluation, I get an accuracy of {no_feature_accuracy * 100:.1f}%")
+    print(f"Using no features and 'random' evaluation, I get an accuracy of {no_feature_accuracy * 100:.1f}% \n")
     
     if algorithm_choice == 1:
         print("Beginning search.")
         # Perform forward selection
         best_subset, best_accuracy = forward_selection(num_features)
-        # Print results
+        print("\nFinished search!! The best feature subset is", best_subset, "which has an accuracy of", best_accuracy, "%")
+    elif algorithm_choice == 2:
+        # Perform backwards elimination
+        best_subset, best_accuracy = backward_elimination(num_features)
         print("\nFinished search!! The best feature subset is", best_subset, "which has an accuracy of", best_accuracy, "%")
     else:
         print("You selected an invalid option.")
