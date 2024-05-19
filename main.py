@@ -11,10 +11,6 @@ def main():
     print("2. Backward Elimination")
     algorithm_choice = int(input())
     
-    # Print initial accuracy without any features
-    no_feature_accuracy = evaluate_subset(set())
-    print(f"Using no features and 'random' evaluation, I get an accuracy of {no_feature_accuracy * 100:.1f}% \n")
-    
     if algorithm_choice == 1:
         print("Beginning search.")
         # Perform forward selection

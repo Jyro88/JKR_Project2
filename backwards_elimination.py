@@ -5,7 +5,9 @@ def backward_elimination(num_features):
     # Initialize the best subset with all features
     best_subset = set(range(1, num_features + 1))
     best_accuracy = evaluate_subset(best_subset)
+    print(f"Using feature(s) {best_subset} accuracy is {best_accuracy * 100:.1f}%")
     subset_evaluations = {}
+    overall_best_accuracy = best_accuracy
     
     # Iterate while there are features in the best subset
     while len(best_subset) > 1:
@@ -29,13 +31,14 @@ def backward_elimination(num_features):
                 current_worst_feature = feature
                 best_accuracy = accuracy
         
-        # Remove the worst feature from the best subset
-        if current_worst_feature is not None:
-            best_subset.remove(current_worst_feature)
-            print(f"\n Feature set {best_subset} was best, accuracy is {best_accuracy * 100:.1f}% \n")
-        else:
-            # If no improvement, terminate the search
-            print("No improvement, terminating search.")
+        # If no improvement, terminate the search
+        if current_worst_feature is None:
+            print("No improvement from removing any features, terminating search.")
             break
+        
+        # Remove the worst feature from the best subset
+        best_subset.remove(current_worst_feature)
+        overall_best_accuracy = best_accuracy
+        print(f"\n Feature set {best_subset} was best, accuracy is {best_accuracy * 100:.1f}% \n")
     
-    return best_subset, best_accuracy * 100
+    return best_subset, overall_best_accuracy * 100

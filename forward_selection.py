@@ -8,12 +8,17 @@ def evaluate_subset(subset):
 def forward_selection(num_features):   
     # Initialize the best subset with an empty set
     best_subset = set()
-    best_accuracy = 0
+    # Print initial accuracy without any features
+    best_accuracy = evaluate_subset(best_subset)
+    print(f"Using no features and 'random' evaluation, I get an accuracy of {best_accuracy * 100:.1f}% \n")
     subset_evaluations = {}
+    overall_best_accuracy = best_accuracy
     
     # Iterate over the number of features
     for i in range(1, num_features + 1):
         current_best_feature = None
+        improved = False
+        
         # Iterate over all features
         for feature in range(1, num_features + 1):
             if feature not in best_subset:
@@ -32,14 +37,16 @@ def forward_selection(num_features):
                 if accuracy > best_accuracy:
                     current_best_feature = feature
                     best_accuracy = accuracy
+                    improved = True
+        
+        # If no improvement, terminate the search
+        if not improved:
+            print("No improvement from adding any features, terminating search.")
+            break
         
         # Add the best feature to the best subset
-        if current_best_feature is not None:
-            best_subset.add(current_best_feature)
-            print(f"\n Feature set {best_subset} was best, accuracy is {best_accuracy * 100:.1f}% \n")
-        else:
-            # If no improvement, terminate the search
-            print("No improvement, terminating search.")
-            break
+        best_subset.add(current_best_feature)
+        overall_best_accuracy = best_accuracy
+        print(f"\n Feature set {best_subset} was best, accuracy is {best_accuracy * 100:.1f}% \n")
     
-    return best_subset, best_accuracy * 100
+    return best_subset, overall_best_accuracy * 100
