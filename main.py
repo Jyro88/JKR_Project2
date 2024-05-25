@@ -1,6 +1,5 @@
 from forward_selection import forward_selection
 from backwards_elimination import backward_elimination
-from forward_selection import evaluate_subset
 
 # Main function
 def main():
