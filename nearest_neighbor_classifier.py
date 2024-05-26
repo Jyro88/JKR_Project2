@@ -1,41 +1,63 @@
 import numpy as np
+from sklearn.preprocessing import StandardScaler
+from time import time
 
-class NNClassifier:
+class NearestNeighborClassifier:
     def __init__(self):
         self.training_data = None
-        self.labels = None
+        self.training_labels = None
+        self.scaler = StandardScaler()
+        self.trace = []
 
     def train(self, data, labels):
-        self.training_data = data
-        self.labels = labels
+        start_time = time()
+        self.training_data = self.scaler.fit_transform(data)
+        self.training_labels = labels
+        end_time = time()
+        self.trace.append(f"Training completed in {end_time - start_time:.4f} seconds.")
 
-    def test(self, instance):
+    def predict(self, instance):
+        start_time = time()
+        instance = self.scaler.transform([instance])[0]
         distances = np.linalg.norm(self.training_data - instance, axis=1)
         nearest_index = np.argmin(distances)
-        return self.labels[nearest_index]
+        prediction = self.training_labels[nearest_index]
+        end_time = time()
+        self.trace.append(f"Prediction for instance completed in {end_time - start_time:.4f} seconds.")
+        return prediction
 
-class Validator:
+    def get_trace(self):
+        return self.trace
+
+class LeaveOneOutValidator:
     def __init__(self, classifier):
         self.classifier = classifier
+        self.trace = []
 
-    def leave_one_out_validation(self, data, labels, feature_subset):
-        n_instances = data.shape[0]
+    def validate(self, data, labels, feature_subset):
+        start_time = time()
+        data_subset = data[:, feature_subset]
         correct_predictions = 0
 
-        for i in range(n_instances):
-            train_data = np.delete(data, i, axis=0)
+        for i in range(len(data_subset)):
+            train_data = np.delete(data_subset, i, axis=0)
             train_labels = np.delete(labels, i)
-            test_instance = data[i, :]
+            test_instance = data_subset[i]
             true_label = labels[i]
 
-            self.classifier.train(train_data[:, feature_subset], train_labels)
-            predicted_label = self.classifier.test(test_instance[feature_subset])
+            self.classifier.train(train_data, train_labels)
+            prediction = self.classifier.predict(test_instance)
 
-            if predicted_label == true_label:
+            if prediction == true_label:
                 correct_predictions += 1
 
-        accuracy = correct_predictions / n_instances
+        accuracy = correct_predictions / len(data_subset)
+        end_time = time()
+        self.trace.append(f"Validation completed in {end_time - start_time:.4f} seconds with accuracy: {accuracy:.4f}.")
         return accuracy
+
+    def get_trace(self):
+        return self.trace
 
 def load_data(filename):
     data = np.loadtxt(filename)
@@ -54,10 +76,20 @@ features = (features - np.mean(features, axis=0)) / np.std(features, axis=0)
 feature_subset = [2, 4, 6]
 # feature_subset = [0, 14, 26]
 
-# Instantiate the classifier and validator
-classifier = NNClassifier()
-validator = Validator(classifier)
+# Initialize the classifier and validator
+nn_classifier = NearestNeighborClassifier()
+validator = LeaveOneOutValidator(nn_classifier)
 
-# Calculate the accuracy using the leave-one-out validation method
-accuracy = validator.leave_one_out_validation(features, labels, feature_subset)
-print(f'Accuracy: {accuracy:.2f}')
+# Perform validation
+accuracy = validator.validate(features, labels, feature_subset)
+
+# Print the trace logs
+print("Classifier Trace Logs:")
+for log in nn_classifier.get_trace():
+    print(log)
+
+print("\nValidator Trace Logs:")
+for log in validator.get_trace():
+    print(log)
+
+print(f"\nAccuracy: {accuracy:.4f}")
